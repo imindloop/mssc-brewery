@@ -9,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RequestMapping("/api/v1/beer")
@@ -33,7 +37,7 @@ public class BeerController {
 
     @PostMapping // This is a POST that creates a new beer..
     //Todo Investigate what does this RequestBody annotation do Which seems to bind the requestbody to the java datatype.
-    public ResponseEntity handlePost(@RequestBody BeerDTO beerDto) {
+    public ResponseEntity handlePost(@Valid @RequestBody BeerDTO beerDto) {
 
         BeerDTO savedBeerDto = beerService.saveBeer(beerDto);
 
@@ -44,7 +48,7 @@ public class BeerController {
     }
 
     @PutMapping({"/{beerId}"})
-    public ResponseEntity handleUpdate(@PathVariable("beerId") UUID beerId, @RequestBody BeerDTO beerDto) {
+    public ResponseEntity handleUpdate(@Valid @PathVariable("beerId") UUID beerId, @RequestBody BeerDTO beerDto) {
 
         beerService.updateBeer(beerId, beerDto);
 
@@ -56,10 +60,19 @@ public class BeerController {
 
     @DeleteMapping("/{beerId}")
     //This allows us to specify a status to return instead of doing it on the ResponseEntity
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleDelete(@PathVariable("beerId") UUID beerId) {
         beerService.deleteById(beerId);
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<List> validationErrorHandler(ConstraintViolationException cve) {
+        List<String> errors = new ArrayList<>(cve.getConstraintViolations().size());
 
+        cve.getConstraintViolations().forEach(constraintViolation -> {
+            errors.add(constraintViolation.getPropertyPath() + " : " + constraintViolation.getMessage());
+        });
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
 }
