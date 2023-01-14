@@ -3,6 +3,7 @@ package com.imindloop.msscbrewery.web.controller;
 import com.imindloop.msscbrewery.web.model.BeerDTO;
 import com.imindloop.msscbrewery.web.services.BeerService;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Validated
 @RequestMapping("/api/v1/beer")
 @RestController
@@ -41,6 +43,8 @@ public class BeerController {
     @PostMapping // This is a POST that creates a new beer..
     //Todo Investigate what does this RequestBody annotation do Which seems to bind the requestbody to the java datatype.
     public ResponseEntity handlePost(@Valid @NotNull @RequestBody BeerDTO beerDto) {
+
+        log.debug("Inside the Post methods for beer controller.");
 
         BeerDTO savedBeerDto = beerService.saveBeer(beerDto);
 
